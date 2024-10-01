@@ -1,0 +1,32 @@
+/* CVList.css */
+.CandidateList {
+    margin-top: 30px;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    border-left: 4px solid #32B6F0;  /* Light blue border */
+    max-width: 800px;
+    margin: auto;
+  }
+  
+  .candidate-item {
+    text-align: left;
+    padding: 15px 10px;
+    border-bottom: 1px solid #ddd;
+    transition: background-color 0.3s ease;
+  }
+  
+  .candidate-item:hover {
+    background-color: #f4f4f4;  /* Light gray background on hover */
+  }
+  
+  .candidate-item strong {
+    font-size: 1.2em;
+    color: #0A2540;  /* Dark blue */
+  }
+  
+  .candidate-item:last-child {
+    border-bottom: none;
+  }
+  

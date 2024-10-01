@@ -1,38 +1,103 @@
+/* App.css */
+
+/* General body styling */
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f7f6;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+/* Main container for the app */
 .App {
   text-align: center;
+  margin: 20px;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  max-width: 900px;
+  margin: auto;
+  margin-top: 50px;
+  border: 2px solid #0A2540;  /* Dark blue border */
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* Header styles */
+h1 {
+  font-size: 2.5em;
+  color: #0A2540; /* Dark Blue */
+  margin-bottom: 20px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* Job Description section */
+.JobDescription {
+  margin-bottom: 20px;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+/* Textarea styling */
+textarea {
+  width: 80%;
+  padding: 10px;
+  margin-top: 10px;
+  border: 1px solid #0A2540;  /* Dark blue border */
+  border-radius: 5px;
+  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Button styles - Similar to TAPartners website */
+button {
+  padding: 15px 30px;  /* Butonun boyutunu büyüttük */
+  margin-top: 10px;
+  background: linear-gradient(90deg, #32B6F0, #0A2540);  /* Mavi renk geçişi */
   color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;  /* Butonu hafif köşeli yaptık */
+  transition: 0.4s ease;  /* Hover animasyonu için geçiş süresi */
+  font-size: 16px;  /* Yazı boyutu */
+  font-weight: bold;  /* Yazı kalınlığı */
+  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.1);  /* Hafif gölge */
 }
 
-.App-link {
-  color: #61dafb;
+/* Hover efekti - Butonun üzerine gelince */
+button:hover {
+  background: linear-gradient(90deg, #0A2540, #32B6F0);  /* Renkleri ters çevir */
+  box-shadow: 0px 15px 20px rgba(0, 0, 0, 0.3);  /* Gölgeyi güçlendirdik */
+  transform: translateY(-3px);  /* Butonu hafif yukarı kaldır */
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+
+/* Candidate list section */
+.CandidateList {
+  margin-top: 30px;
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #32B6F0;  /* Light blue left border */
+  max-width: 800px;
+  margin: auto;
+}
+
+/* Candidate item styles */
+.candidate-item {
+  text-align: left;
+  padding: 15px 10px;
+  border-bottom: 1px solid #ddd;
+  transition: background-color 0.3s ease;
+}
+
+.candidate-item:hover {
+  background-color: #f4f4f4;  /* Light gray background on hover */
+}
+
+.candidate-item strong {
+  font-size: 1.2em;
+  color: #0A2540;  /* Dark blue */
+}
+
+/* Last child item with no border */
+.candidate-item:last-child {
+  border-bottom: none;
 }
