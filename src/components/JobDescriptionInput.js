@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 
 function JobDescriptionInput({ onSubmit }) {
-  const [jobDescription, setJobDescription] = useState('');
+  const [jobDescription, setJobDescription] = useState(''); // State to store job description input
 
+  // Handle the form submission and call parent component function
   const handleSubmit = () => {
-    onSubmit(jobDescription);  // Üst bileşene iş tanımını gönder
-    setJobDescription('');  // Metin kutusunu temizle
+    onSubmit(jobDescription); // Pass job description to parent component
+    setJobDescription(''); // Clear the input field
   };
 
   return (

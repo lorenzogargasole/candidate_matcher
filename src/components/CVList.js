@@ -1,5 +1,5 @@
 import React from 'react';
-import './CVList.css';  // Stillerin olduğu CSS dosyasını ekleyin
+import './CVList.css'; // Import CSS for styling
 
 function CVList({ candidates }) {
   return (
@@ -7,12 +7,12 @@ function CVList({ candidates }) {
       <h2>Candidate List</h2>
       <ul>
         {candidates.length === 0 ? (
-          <p>No candidates found.</p>
+          <p>No candidates found.</p> // Show a message if no candidates are available
         ) : (
           candidates.map((candidate, index) => (
             <li key={index} className="candidate-item">
               <strong>{candidate.first_name} {candidate.last_name}</strong> - {candidate.city}, {candidate.country}
-              <p>Skills: {candidate.skills}</p>
+              <p>CV: {candidate.CV}</p>
               <p>Email: {candidate.email}</p>
             </li>
           ))

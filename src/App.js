@@ -4,32 +4,33 @@ import JobDescriptionInput from './components/JobDescriptionInput';
 import CVList from './components/CVList';
 
 function App() {
-  const [candidates, setCandidates] = useState([]);  // Adayları tutmak için state
-  const [description, setDescription] = useState('');  // İş tanımını tutmak için state
-  const [filteredCandidates, setFilteredCandidates] = useState([]);  // Filtrelenmiş adaylar
+  // States for candidates and filtered candidates
+  const [candidates, setCandidates] = useState([]);  // Store all candidates
+  const [description, setDescription] = useState('');  // Store the job description
+  const [filteredCandidates, setFilteredCandidates] = useState([]);  // Store filtered candidates
 
-  // MongoDB'deki aday verilerini çekmek için useEffect
+  // Fetch data from the backend API
   useEffect(() => {
-    fetch('http://localhost:5001/api/candidates')
+    fetch('http://localhost:5001/api/candidates')  // Adjust this URL based on your backend setup
       .then((response) => response.json())
       .then((data) => {
-        console.log('Fetched data:', data);  // Verileri console'da görüntüleyin
-        setCandidates(data);
-        setFilteredCandidates(data);
+        console.log('Data fetched from API:', data);  // Check if data is correctly fetched
+        setCandidates(data);  // Set state with fetched data
+        setFilteredCandidates(data);  // Set initial state for displaying candidates
       })
       .catch((error) => console.error('Error fetching candidates:', error));
   }, []);
-  
-  // İş tanımı gönderildiğinde filtreleme fonksiyonu
+
+  // Filter candidates based on the job description
   const handleDescriptionSubmit = (jobDescription) => {
-    setDescription(jobDescription);  // İş tanımını güncelle
+    setDescription(jobDescription);
     console.log('Job Description Submitted:', jobDescription);
 
-    // İş tanımına göre adayları filtreleme
+    // Filter candidates based on job description
     const filtered = candidates.filter((candidate) =>
-      candidate.skills.toLowerCase().includes(jobDescription.toLowerCase())
+      candidate.CV && candidate.CV.toLowerCase().includes(jobDescription.toLowerCase())  // Adjusted to filter using CV
     );
-    setFilteredCandidates(filtered);  // Filtrelenmiş adayları güncelle
+    setFilteredCandidates(filtered);
   };
 
   return (
@@ -37,9 +38,7 @@ function App() {
       <header className="App-header">
         <h1>CV Matching App</h1>
       </header>
-      {/* İş tanımını girmek için JobDescriptionInput bileşeni */}
       <JobDescriptionInput onSubmit={handleDescriptionSubmit} />
-      {/* Filtrelenmiş adayları göstermek için CVList bileşeni */}
       <CVList candidates={filteredCandidates} />
     </div>
   );

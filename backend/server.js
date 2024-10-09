@@ -1,46 +1,49 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
+const express = require('express'); // Import Express framework for backend
+const mongoose = require('mongoose'); // Import Mongoose for MongoDB
+const cors = require('cors'); // Import CORS to handle cross-origin requests
 
-// MongoDB Bağlantısı
+// MongoDB Connection String (Make sure it matches your credentials)
 const mongoURI = 'mongodb+srv://TalentDB:Aycan1234.@talentdb.kcehf.mongodb.net/cv_v3_database?retryWrites=true&w=majority';
+
+// Connect to MongoDB using Mongoose
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('MongoDB bağlantısı başarılı!'))
-  .catch((err) => console.log('MongoDB bağlantısı başarısız:', err));
+  .then(() => console.log('MongoDB connection successful!'))
+  .catch((err) => console.log('MongoDB connection failed:', err));
 
-// Express Uygulama Ayarı
+// Create an Express app
 const app = express();
-app.use(cors());
-app.use(express.json());
+app.use(cors()); // Use CORS to allow cross-origin requests
+app.use(express.json()); // Use JSON parser for request bodies
 
-// Mongoose Şema Tanımı
+// Define Mongoose Schema for the candidate collection
 const CandidateSchema = new mongoose.Schema({
-  CV: String,
-  first_name: String,
-  last_name: String,
-  city: String,
-  country: String,
-  skills: String,
-  email: String,
-  phone: String
+  CV: String,           // Full CV text
+  first_name: String,   // Candidate's first name
+  last_name: String,    // Candidate's last name
+  city: String,         // City of the candidate
+  country: String,      // Country of the candidate
+  email: String,        // Email address
+  phone: String         // Phone number
 });
-const Candidate = mongoose.model('cv_v3_database', CandidateSchema);
 
-// API Endpoint Tanımı
+// Define Mongoose Model based on the schema (use exact collection name)
+const Candidate = mongoose.model('cv_v3_database', CandidateSchema, 'cv_v3_database');
+
+// API Endpoint to get all candidates
 app.get('/api/candidates', async (req, res) => {
-    try {
-      const candidates = await Candidate.find();  // MongoDB'den tüm verileri çekiyoruz
-      console.log('Fetched candidates:', candidates);  // Verileri terminale yazdır
-      res.json(candidates);  // Verileri frontend'e gönderiyoruz
-    } catch (err) {
-      console.log('Veri çekme hatası:', err);  // Hata olursa terminale yazdır
-      res.status(500).send('Veri çekme hatası:', err);
-    }
-  });
-  
+  try {
+    const candidates = await Candidate.find(); // Retrieve all candidates from MongoDB
+    console.log('Fetched candidates:', candidates); // Log the data to see if it was fetched correctly
+    res.json(candidates); // Send the candidates to the frontend
+  } catch (err) {
+    console.log('Data fetch error:', err);
+    res.status(500).send('Data fetch error:', err);
+  }
+});
 
-// Sunucu Ayarı
+
+// Server listening on port 5001
 const PORT = 5001;
 app.listen(PORT, () => {
-  console.log(`Backend sunucu http://localhost:${PORT} adresinde çalışıyor!`);
+  console.log(`Backend server running at http://localhost:${PORT}`);
 });
