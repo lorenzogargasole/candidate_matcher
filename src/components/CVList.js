@@ -12,7 +12,7 @@ function CVList({ candidates }) {
           candidates.map((candidate, index) => (
             <li key={index} className="candidate-item">
               <strong>{candidate.first_name} {candidate.last_name}</strong> - {candidate.city}, {candidate.country}
-              <p>CV: {candidate.CV}</p>
+              <pre>CV: {candidate.CV}</pre>
               <p>Email: {candidate.email}</p>
             </li>
           ))

@@ -32,9 +32,9 @@ const Candidate = mongoose.model('cv_v3_database', CandidateSchema, 'cv_v3_datab
 // API Endpoint to get all candidates
 app.get('/api/candidates', async (req, res) => {
   try {
-    const candidates = await Candidate.find(); // Retrieve all candidates from MongoDB
-    console.log('Fetched candidates:', candidates); // Log the data to see if it was fetched correctly
-    res.json(candidates); // Send the candidates to the frontend
+    const candidates = await Candidate.find().limit(5); // Retrieve all candidates from MongoDB
+    console.log('Fetched candidates,(limited to 5):', candidates); // Log the data to see if it was fetched correctly
+    res.send(JSON.stringify(candidates,null,2)) // Send the candidates to the frontend
   } catch (err) {
     console.log('Data fetch error:', err);
     res.status(500).send('Data fetch error:', err);
