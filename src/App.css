@@ -81,23 +81,11 @@ button:hover {
 }
 
 /* Candidate item styles */
-.candidate-item {
-  text-align: left;
-  padding: 15px 10px;
-  border-bottom: 1px solid #ddd;
-  transition: background-color 0.3s ease;
-}
-
-.candidate-item:hover {
-  background-color: #f4f4f4;  /* Light gray background on hover */
-}
-
-.candidate-item strong {
-  font-size: 1.2em;
-  color: #0A2540;  /* Dark blue */
-}
-
-/* Last child item with no border */
-.candidate-item:last-child {
-  border-bottom: none;
+.candidate-item pre {
+  white-space: pre-wrap; 
+  font-family: 'Courier New', monospace;
+  background-color: #f4f4f4; 
+  padding: 10px; 
+  border-radius: 5px; 
+  overflow-x: auto; 
 }
