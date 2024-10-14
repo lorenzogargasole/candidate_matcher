@@ -2,6 +2,14 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 
+const path = require('path');
+const app = express();
+app.use(cors()); // Use CORS to allow cross-origin requests
+app.use(express.json()); // Use JSON parser for request bodies
+
+app.use(express.static(path.join(__dirname, '..','build')));
+
+
 // MongoDB Connection String
 const mongoURI = 'mongodb+srv://TalentDB:Aycan1234.@talentdb.kcehf.mongodb.net/cv_v3_database?retryWrites=true&w=majority';
 
@@ -10,11 +18,11 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB connection successful!'))
   .catch((err) => console.log('MongoDB connection failed:', err));
 
-// Create an Express app
+/* Create an Express app
 const app = express();
 app.use(cors()); // Use CORS to allow cross-origin requests
-app.use(express.json()); // Use JSON parser for request bodies
-app.use(express.static(`${__dirname}/public`)); // Serve static files from 'public'
+app.use(express.json()); // Use JSON parser for request bodies*/
+
 
 // Define Mongoose Schema for the candidate collection
 const CandidateSchema = new mongoose.Schema({
@@ -57,8 +65,11 @@ app.get('/api/candidates/filter', async (req, res) => {
   }
 });
 
-// Server listening on port 5001
-const PORT = 5001;
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname,'..', 'build', 'index.html'));
+});
+
+const PORT = 5001; // 
 app.listen(PORT, () => {
-  console.log(`Backend server running at http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
