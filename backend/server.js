@@ -1,30 +1,23 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-
 const path = require('path');
+  const extractKeywords = require('./openai');  // OpenAI anahtar kelime çıkarma fonksiyonunu ekledik
+require('dotenv').config();  // .env dosyasından API anahtarlarını okumak için
+
 const app = express();
-app.use(cors()); // Use CORS to allow cross-origin requests
-app.use(express.json()); // Use JSON parser for request bodies
+app.use(cors());
+app.use(express.json());
+app.use(express.static(path.join(__dirname, '..', 'build')));
 
-app.use(express.static(path.join(__dirname, '..','build')));
+// MongoDB bağlantısı
+const mongoURI = process.env.MONGODB_URI || 'mongodb+srv://kendi_mongodb_uri';
 
-
-// MongoDB Connection String
-const mongoURI = 'mongodb+srv://TalentDB:Aycan1234.@talentdb.kcehf.mongodb.net/cv_v3_database?retryWrites=true&w=majority';
-
-// Connect to MongoDB using Mongoose
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('MongoDB connection successful!'))
-  .catch((err) => console.log('MongoDB connection failed:', err));
+  .then(() => console.log('MongoDB bağlantısı başarılı!'))
+  .catch((err) => console.log('MongoDB bağlantısı başarısız:', err));
 
-/* Create an Express app
-const app = express();
-app.use(cors()); // Use CORS to allow cross-origin requests
-app.use(express.json()); // Use JSON parser for request bodies*/
-
-
-// Define Mongoose Schema for the candidate collection
+// Mongoose şeması
 const CandidateSchema = new mongoose.Schema({
   CV: String,
   first_name: String,
@@ -35,41 +28,40 @@ const CandidateSchema = new mongoose.Schema({
   phone: String
 });
 
-// Define Mongoose Model based on the schema (use exact collection name)
 const Candidate = mongoose.model('cv_v3_database', CandidateSchema, 'cv_v3_database');
 
-// API Endpoint to get all candidates
-app.get('/api/candidates', async (req, res) => {
-  try {
-    const candidates = await Candidate.find().limit(30); // Retrieve all candidates from MongoDB
-    res.json(candidates); // Send the candidates to the frontend in JSON format
-  } catch (err) {
-    res.status(500).json({ message: 'Data fetch error', error: err });
-  }
-});
-
-// API Endpoint to filter candidates based on job description
+// OpenAI ile anahtar kelime çıkarma ve MongoDB'den filtreleme işlemi
 app.get('/api/candidates/filter', async (req, res) => {
   const { jobDescription } = req.query;
-  console.log('Received job description:', jobDescription); 
+  console.log('İş tanımı alındı:', jobDescription);
 
   try {
-    // Filter candidates based on the job descriptionS
-    const candidates = await Candidate.find({
-      CV: { $regex: new RegExp(jobDescription, 'i') } // Case-insensitive search
-    });
-    console.log('Filtered candidates:', candidates);
-    res.json(candidates); // Send filtered candidates to the frontend
+    // OpenAI ile anahtar kelimeleri çıkarıyoruz
+    const keywords = await extractKeywords(jobDescription);  // OpenAI ile iş tanımını işliyoruz
+    console.log('Anahtar kelimeler:', keywords);
+
+    // MongoDB Atlas Search ile sadece "CV" alanında anahtar kelimelerle arama yapıyoruz
+    const candidates = await Candidate.aggregate([
+      {
+        $search: {
+          "text": {
+            "query": keywords.join(" "),  // AI tarafından çıkarılan anahtar kelimelerle arama yapılıyor
+            "path": "CV"  // Sadece "CV" alanında arama yapıyoruz, manuel filtreleme yok
+          }
+        }
+      },
+      {
+        $limit: 50  // İlk 50 sonucu getiriyoruz
+      }
+    ]);
+
+    res.json(candidates);  // Filtrelenmiş sonuçları frontend'e döndürüyoruz
   } catch (err) {
-    res.status(500).json({ message: 'Error filtering candidates', error: err });
+    res.status(500).json({ message: 'Kişi arama hatası', error: err });
   }
 });
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname,'..', 'build', 'index.html'));
-});
-
-const PORT = 5001; // 
+const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Sunucu ${PORT} portunda çalışıyor`);
 });
