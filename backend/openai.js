@@ -1,20 +1,25 @@
-const { Configuration, OpenAIApi } = require("openai");
+"use server";
 
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,  // OpenAI API anahtarını .env dosyasından alıyoruz
+import OpenAI from "openai";
+
+const openai = new OpenAI({
+  apiKey:process.env.NEXT_PUBLIC_OPENAI_KEY
 });
-const openai = new OpenAIApi(configuration);
 
 // Anahtar kelimeleri çıkartan fonksiyon
 async function extractKeywords(userInput) {
   try {
-    const response = await openai.createCompletion({
-      model: "text-davinci-003",
-      prompt: `Extract key skills, technologies, or job titles from this sentence: "${userInput}"`,
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        { role: "system", content: "You are a helpful assistant who extracts key skills and job titles from job descriptions." },
+        { role: "user", content: `Extract key skills, technologies, or job titles from this sentence: "${userInput}"` }
+      ],
       max_tokens: 50,
     });
 
-    const extractedKeywords = response.data.choices[0].text.trim().split(", ");
+    // Yanıttan anahtar kelimeleri ayıklama
+    const extractedKeywords = response.choices[0].message.content.trim().split(", ");
     return extractedKeywords;
   } catch (error) {
     console.error("OpenAI API hatası:", error);
@@ -22,6 +27,4 @@ async function extractKeywords(userInput) {
   }
 }
 
-module.exports = extractKeywords;
-
-
+export { extractKeywords };

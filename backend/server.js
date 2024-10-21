@@ -1,18 +1,21 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const path = require('path');
-  const extractKeywords = require('./openai');  // OpenAI anahtar kelime çıkarma fonksiyonunu ekledik
-require('dotenv').config();  // .env dosyasından API anahtarlarını okumak için
+
+import cors from 'cors';
+import 'dotenv/config';
+import express from 'express';
+import mongoose from 'mongoose';
+import path from 'path';
+import { extractKeywords } from './openai.js'; // OpenAI anahtar kelime çıkarma fonksiyonunu içe aktardık
+
+
+// .env dosyasından API anahtarlarını okumak için
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '..', 'build')));
+app.use(express.static(path.join(new URL('.', import.meta.url).pathname, '..', 'build')));
 
 // MongoDB bağlantısı
-const mongoURI = process.env.MONGODB_URI || 'mongodb+srv://kendi_mongodb_uri';
-
+const mongoURI = 'mongodb+srv://TalentDB:Aycan1234.@talentdb.kcehf.mongodb.net/?retryWrites=true&w=majority&appName=TalentDB';
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB bağlantısı başarılı!'))
   .catch((err) => console.log('MongoDB bağlantısı başarısız:', err));
@@ -23,9 +26,12 @@ const CandidateSchema = new mongoose.Schema({
   first_name: String,
   last_name: String,
   city: String,
-  country: String,
+  country: String,  
   email: String,
   phone: String
+});
+app.get('/test', (req,res)=>{
+  res.send("API is working");
 });
 
 const Candidate = mongoose.model('cv_v3_database', CandidateSchema, 'cv_v3_database');
@@ -48,10 +54,10 @@ app.get('/api/candidates/filter', async (req, res) => {
             "query": keywords.join(" "),  // AI tarafından çıkarılan anahtar kelimelerle arama yapılıyor
             "path": "CV"  // Sadece "CV" alanında arama yapıyoruz, manuel filtreleme yok
           }
-        }
+        } 
       },
       {
-        $limit: 50  // İlk 50 sonucu getiriyoruz
+        $limit: 20  // İlk 20 sonucu getiriyoruz
       }
     ]);
 
@@ -65,3 +71,4 @@ const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`Sunucu ${PORT} portunda çalışıyor`);
 });
+
