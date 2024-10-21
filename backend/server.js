@@ -3,7 +3,6 @@ import cors from 'cors';
 import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
-import path from 'path';
 import { extractKeywords } from './openai.js'; // OpenAI anahtar kelime çıkarma fonksiyonunu içe aktardık
 
 
@@ -12,12 +11,12 @@ import { extractKeywords } from './openai.js'; // OpenAI anahtar kelime çıkarm
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(new URL('.', import.meta.url).pathname, '..', 'build')));
+//app.use(express.static(path.join(new URL('.', import.meta.url).pathname, '..', 'build')));
 
 // MongoDB bağlantısı
-const mongoURI = 'mongodb+srv://TalentDB:Aycan1234.@talentdb.kcehf.mongodb.net/?retryWrites=true&w=majority&appName=TalentDB';
+const mongoURI = 'mongodb+srv://TalentDB:Aycan1234.@talentdb.kcehf.mongodb.net/cv_v3_database?retryWrites=true&w=majority';
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('MongoDB bağlantısı başarılı!'))
+  .then(() => console.log('MongoDB connection is successfull!'))
   .catch((err) => console.log('MongoDB bağlantısı başarısız:', err));
 
 // Mongoose şeması
@@ -37,27 +36,46 @@ app.get('/test', (req,res)=>{
 const Candidate = mongoose.model('cv_v3_database', CandidateSchema, 'cv_v3_database');
 
 // OpenAI ile anahtar kelime çıkarma ve MongoDB'den filtreleme işlemi
+app.get('/api/candidates', async (req, res) => {
+  const limit = parseInt(req.query.limit) || 20;
+  try {
+    const candidates = await Candidate.aggregate([{ $sample: { size: limit } }]);
+    res.json(candidates); 
+  } catch (err) {
+    res.status(500).json({ message: 'Rastgele veri getirme hatası', error: err });
+  }
+});
+
 app.get('/api/candidates/filter', async (req, res) => {
   const { jobDescription } = req.query;
-  console.log('İş tanımı alındı:', jobDescription);
+  console.log('Job description received:', jobDescription);
 
   try {
     // OpenAI ile anahtar kelimeleri çıkarıyoruz
     const keywords = await extractKeywords(jobDescription);  // OpenAI ile iş tanımını işliyoruz
     console.log('Anahtar kelimeler:', keywords);
 
-    // MongoDB Atlas Search ile sadece "CV" alanında anahtar kelimelerle arama yapıyoruz
+    // Tüm veritabanında anahtar kelimelere göre arama yapıyoruz ve skora göre sıralıyoruz
     const candidates = await Candidate.aggregate([
       {
         $search: {
           "text": {
-            "query": keywords.join(" "),  // AI tarafından çıkarılan anahtar kelimelerle arama yapılıyor
-            "path": "CV"  // Sadece "CV" alanında arama yapıyoruz, manuel filtreleme yok
+            "query": keywords.join(" "),  // AI tarafından çıkarılan anahtar kelimelerle tüm veritabanında arama yapılıyor
+            "path": "CV",  // Sadece "CV" alanında arama yapıyoruz
+            "score": { "boost": { "value": 1 } }  // Skora dayalı sıralama
           }
-        } 
+        }
       },
       {
-        $limit: 20  // İlk 20 sonucu getiriyoruz
+        $addFields: {
+          score: { $meta: "searchScore" }  // Arama skoru ekleniyor
+        }
+      },
+      {
+        $sort: { score: -1 }  // Skora göre sıralama (en yüksekten düşüğe)
+      },
+      {
+        $limit: 20  // En uyumlu 20 sonucu getiriyoruz
       }
     ]);
 
