@@ -1,0 +1,32 @@
+.homepage-container {
+    text-align: center;
+    padding: 50px;
+  }
+  
+  h1 {
+    font-size: 2.5em;
+    color: #0A2540;
+    margin-bottom: 50px;
+  }
+  
+  .buttons-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+  
+  .homepage-button {
+    padding: 20px 40px;
+    font-size: 1.5em;
+    background-color: #32B6F0;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .homepage-button:hover {
+    background-color: #0A2540;
+  }
+  

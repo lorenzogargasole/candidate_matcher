@@ -1,25 +1,20 @@
-
 import cors from 'cors';
 import 'dotenv/config';
 import express from 'express';
 import mongoose from 'mongoose';
-import { extractKeywords } from './openai.js'; // OpenAI anahtar kelime çıkarma fonksiyonunu içe aktardık
-
-
-// .env dosyasından API anahtarlarını okumak için
+import { extractKeywordsFromLongDescription } from './openai.js';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-//app.use(express.static(path.join(new URL('.', import.meta.url).pathname, '..', 'build')));
 
-// MongoDB bağlantısı
-const mongoURI = 'mongodb+srv://TalentDB:Aycan1234.@talentdb.kcehf.mongodb.net/cv_v3_database?retryWrites=true&w=majority';
+// MongoDB connection
+const mongoURI = process.env.MONGODB_URI;  // Use your .env MongoDB URI
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('MongoDB connection is successfull!'))
-  .catch((err) => console.log('MongoDB bağlantısı başarısız:', err));
+  .then(() => console.log('MongoDB connection is successful!'))
+  .catch((err) => console.log('MongoDB connection failed:', err));
 
-// Mongoose şeması
+// Mongoose schema definition
 const CandidateSchema = new mongoose.Schema({
   CV: String,
   first_name: String,
@@ -29,64 +24,89 @@ const CandidateSchema = new mongoose.Schema({
   email: String,
   phone: String
 });
-app.get('/test', (req,res)=>{
-  res.send("API is working");
-});
+
+CandidateSchema.index({ first_name: 1, last_name: 1 });
+CandidateSchema.index({ email: 1 });
+CandidateSchema.index({ CV: 'text' });
 
 const Candidate = mongoose.model('cv_v3_database', CandidateSchema, 'cv_v3_database');
 
-// OpenAI ile anahtar kelime çıkarma ve MongoDB'den filtreleme işlemi
-app.get('/api/candidates', async (req, res) => {
-  const limit = parseInt(req.query.limit) || 20;
-  try {
-    const candidates = await Candidate.aggregate([{ $sample: { size: limit } }]);
-    res.json(candidates); 
-  } catch (err) {
-    res.status(500).json({ message: 'Rastgele veri getirme hatası', error: err });
-  }
-});
+// Function to calculate match percentage and matched keywords
+function calculateMatchPercentageAndMatchedKeywords(keywords, candidateCV) {
+  let matchedKeywords = [];
+  let totalScore = 0;
+  let maxScore = keywords.length * 10;  // Assume each keyword is worth 10 points
 
+  // Check for each keyword in the candidate's CV
+  keywords.forEach(keyword => {
+    if (candidateCV.toLowerCase().includes(keyword.toLowerCase())) {
+      matchedKeywords.push(keyword);  // Collect matched keywords
+      totalScore += 10;  // Add 10 points for each match
+    }
+  });
+
+  // Calculate match percentage based on total score
+  const matchPercentage = (totalScore / maxScore) * 100;
+  return {
+    matchPercentage: Math.round(matchPercentage),
+    matchedKeywords
+  };
+}
+
+// Route to filter candidates based on job description
 app.get('/api/candidates/filter', async (req, res) => {
   const { jobDescription } = req.query;
-  console.log('Job description received:', jobDescription);
+
+  if (jobDescription.length > 2000) {  
+    return res.status(400).json({ message: 'Job description is too long. Please shorten it.' });
+  }
+
+  const startTime = Date.now();
 
   try {
-    // OpenAI ile anahtar kelimeleri çıkarıyoruz
-    const keywords = await extractKeywords(jobDescription);  // OpenAI ile iş tanımını işliyoruz
-    console.log('Anahtar kelimeler:', keywords);
-
-    // Tüm veritabanında anahtar kelimelere göre arama yapıyoruz ve skora göre sıralıyoruz
+    // Extract keywords using the long description handler
+    const keywords = await extractKeywordsFromLongDescription(jobDescription);
+    
+    // Search candidates based on extracted keywords
     const candidates = await Candidate.aggregate([
       {
         $search: {
           "text": {
-            "query": keywords.join(" "),  // AI tarafından çıkarılan anahtar kelimelerle tüm veritabanında arama yapılıyor
-            "path": "CV",  // Sadece "CV" alanında arama yapıyoruz
-            "score": { "boost": { "value": 1 } }  // Skora dayalı sıralama
+            "query": keywords.join(" "),  // Join keywords into a query string
+            "path": "CV",  // Search in the CV field
+            "score": { "boost": { "value": 1 } }  // Sorting based on score
           }
         }
       },
-      {
-        $addFields: {
-          score: { $meta: "searchScore" }  // Arama skoru ekleniyor
-        }
-      },
-      {
-        $sort: { score: -1 }  // Skora göre sıralama (en yüksekten düşüğe)
-      },
-      {
-        $limit: 20  // En uyumlu 20 sonucu getiriyoruz
-      }
+      { $addFields: { score: { $meta: "searchScore" } } },  // Add search score to the result
+      { $sort: { score: -1 } },  // Sort candidates by search score in descending order
+      { $limit: 20 }  // Limit to top 20 results
     ]);
 
-    res.json(candidates);  // Filtrelenmiş sonuçları frontend'e döndürüyoruz
+    // Add match percentage and matched keywords
+    const candidatesWithMatch = candidates.map(candidate => {
+      const { matchPercentage, matchedKeywords } = calculateMatchPercentageAndMatchedKeywords(keywords, candidate.CV);
+
+      // Only return candidates with a match percentage greater than 0
+      if (matchPercentage > 0) {
+        return { 
+          ...candidate, 
+          matchPercentage,
+          matchedKeywords
+        };
+      }
+      return null;
+    }).filter(candidate => candidate !== null);  // Filter out candidates with 0% match
+
+    res.json(candidatesWithMatch);
   } catch (err) {
-    res.status(500).json({ message: 'Kişi arama hatası', error: err });
+    console.error('Error during candidate search:', err);  
+    res.status(500).json({ message: 'Candidate search error', error: err });
   }
 });
 
+// Start the server
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
-  console.log(`Sunucu ${PORT} portunda çalışıyor`);
+  console.log(`Server is running on port ${PORT}`);
 });
-
