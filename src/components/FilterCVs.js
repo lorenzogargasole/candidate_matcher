@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import CVList from './CVList';  // Candidate list component
+import CVList from './CVList'; // Candidate list component
 import './FilterCVs.css';
 
 function FilterCVs() {
