@@ -22,8 +22,9 @@ function CVList({ candidates }) {
             <li key={index} className="candidate-item">
               <strong>{candidate.first_name} {candidate.last_name}</strong> - {candidate.city}, {candidate.country}
               <p>Email: {candidate.email}</p>
-              <p>Match Percentage: {candidate.matchPercentage}%</p>
-              <p>Matched Keywords: {candidate.matchedKeywords.join(', ')}</p>
+              <p>Score: {candidate.score}/100</p>
+              {/*<p>Match Percentage: {candidate.matchPercentage}%</p>]*/}
+              {/*<p>Matched Keywords: {(candidate.matchedKeywords || []).join(', ')}</p>*/}
               <button onClick={() => toggleCVVisibility(index)}>
                 {visibleCVs[index] ? 'Hide CV' : 'Show CV'}
               </button>
