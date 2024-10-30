@@ -14,7 +14,7 @@ function CVGPT() {
     setFilteredCandidates([]);
     console.log(`Sending job description to API: ${jobDescription}`);
     
-    fetch(`http://localhost:5001/api/candidates/filter?jobDescription=${jobDescription}`)
+    fetch(`http://localhost:5001/api/candidates/filterGPT?jobDescription=${jobDescription}`)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);

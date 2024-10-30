@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 
 function JobDescriptionInput({ onSubmit }) {
   const [jobDescription, setJobDescription] = useState(''); // State to store job description input
-
   // Handle the form submission and call parent component function
   const handleSubmit = () => {
     console.log('Submit button clicked'); // Butona tıklandığında bu log görünmeli

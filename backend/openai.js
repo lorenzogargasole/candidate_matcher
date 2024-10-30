@@ -14,8 +14,6 @@ async function getMatchingScore (jobDescription, candidateCV) {
 
   CV:
   ${candidateCV}
-
- 
   Please provide only a numeric score (between 0 and 100) that indicates how well this CV matches the job description.
   Just respond with the score.
   `;
