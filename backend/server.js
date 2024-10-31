@@ -9,12 +9,12 @@ app.use(cors());
 app.use(express.json());
 
 const mongoURI = process.env.MONGODB_URI;
-//connecting to mongoDB
+// Connecting to MongoDB
 mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('MongoDB connection is successful!'))
   .catch((err) => console.log('MongoDB connection failed:', err));
 
-//use the same schema names of MongoDB
+// Define MongoDB Schema
 const CandidateSchema = new mongoose.Schema({
   CV: String,
   FirstName: String,
@@ -36,61 +36,72 @@ app.get('/api/candidates/filterGPT', async (req, res) => {
   console.log('Job description received:', jobDescription);
   try {
     const searchKeywords = jobDescription.split(' ');
-    // MongoDB text araması ile ilk filtreleme
     let candidates = await Candidate.aggregate([
       {
         $search: {
           "text": {
             "query": searchKeywords.join(" "),
-            "path": ["CV",  "Skills", "JobTitle"]
+            "path": ["CV", "Skills", "JobTitle"]
           }
         }
       },
       {
-        $limit: 100  // Limita il numero di risultati iniziali a 100
+        $limit: 100
       }
     ]);
     
-
-    // similarity scoring using ai
     const scoredCandidates = await Promise.all(candidates.map(async (candidate) => {
       const score = await getMatchingScore(jobDescription, candidate.CV);
       return { ...candidate, score };
     }));
 
-    // Candidate sorting, top 20
-    scoredCandidates.sort((a, b) => b.score - a.score);
-    res.json(scoredCandidates.slice(0, 20));
+    // Filter duplicates by 'CV'
+    const uniqueCandidates = [];
+    const seenCVs = new Set();
+    
+    scoredCandidates.sort((a, b) => b.score - a.score).forEach(candidate => {
+      if (!seenCVs.has(candidate.CV)) {
+        seenCVs.add(candidate.CV);
+        uniqueCandidates.push(candidate);
+      }
+    });
+
+    res.json(uniqueCandidates.slice(0, 20));
   } catch (err) {
     console.error('Error during candidate search:', err);  
     res.status(500).json({ message: 'Candidate search error', error: err });
   }
 });
 
-
-// FIlter by city, skills, jobTitle, country API
+// Filter by city, skills, jobTitle, country API
 app.get('/api/candidates/filterCV', async (req, res) => {
-  const {city, skills, jobTitle, country } = req.query;
-  console.log('Job Parameters received:', { city, skills, jobTitle, country});
+  const { city, skills, jobTitle, country } = req.query;
+  console.log('Job Parameters received:', { city, skills, jobTitle, country });
   try {
     const filterConditions = {};
-    //if filters --> add filters
     if (city) { filterConditions.City = { $regex: `^${city}$`, $options: 'i' }; }
-    if (country) {filterConditions.Country = country;}
-    if (skills) {filterConditions.Skills = { $regex: skills, $options: 'i' };}
-    if (jobTitle) {filterConditions.JobTitle = { $regex: jobTitle, $options: 'i' };}
-
-    // Execute the query
+    if (country) { filterConditions.Country = country; }
+    if (skills) { filterConditions.Skills = { $regex: skills, $options: 'i' }; }
+    if (jobTitle) { filterConditions.JobTitle = { $regex: jobTitle, $options: 'i' }; }
 
     let candidates = await Candidate.find(filterConditions).limit(100);
     console.log('Candidates found: ', candidates.length);
+
+    const uniqueCandidates = [];
+    const seenCVs = new Set();
     
-    // If no candidates found
-    if (candidates.length === 0) {
+    candidates.forEach(candidate => {
+      if (!seenCVs.has(candidate.CV)) {
+        seenCVs.add(candidate.CV);
+        uniqueCandidates.push(candidate);
+      }
+    });
+
+    if (uniqueCandidates.length === 0) {
       return res.status(404).json({ message: 'No candidates found' });
     }
-    // Return the candidates found
-    res.json(candidates);
+    
+    res.json(uniqueCandidates);
   } catch (err) {
     console.error('Error during candidate search:', err);  
     res.status(500).json({ message: 'Candidate search error', error: err });

@@ -20,11 +20,8 @@ function CVList({ candidates }) {
         ) : (
           candidates.map((candidate, index) => (
             <li key={index} className="candidate-item">
-              <strong>{candidate.FirstName} {candidate.LastName}</strong> - {candidate.City}, {candidate.Country}
-              <p>Email: {candidate.Mail}</p>
-              <p>Score: {candidate.Score}/100</p>
-              {/*<p>Match Percentage: {candidate.matchPercentage}%</p>]*/}
-              {/*<p>Matched Keywords: {(candidate.matchedKeywords || []).join(', ')}</p>*/}
+              <strong> {candidate.FirstName} {candidate.LastName}</strong> - {candidate.City}, {candidate.Country}
+              <br />
               <button onClick={() => toggleCVVisibility(index)}>
                 {visibleCVs[index] ? 'Hide CV' : 'Show CV'}
               </button>

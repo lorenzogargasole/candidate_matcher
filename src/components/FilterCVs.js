@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CVList from './CVList'; // Candidate list component
 import './FilterCVs.css';
 
@@ -8,6 +9,8 @@ function FilterCVs() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searched, setSearched] = useState(false); 
+  const navigate = useNavigate();
+
 
   //Filter submit
   const handleFilterSubmit = async () => {
@@ -55,6 +58,7 @@ function FilterCVs() {
 
   return (
     <div className="filtercvs-container">
+      <button className="back-button" onClick={() => navigate('/')}>Back to Home</button>
       <h2>Filter CV's</h2>
       <div className="filter-inputs">
         <input

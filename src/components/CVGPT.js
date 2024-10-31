@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import CVList from './CVList';  // Candidate list component
 import JobDescriptionInput from './JobDescriptionInput';  // Job description input component
 import './CVGPT.css';
@@ -7,6 +8,7 @@ function CVGPT() {
   const [filteredCandidates, setFilteredCandidates] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   const handleDescriptionSubmit = (jobDescription) => {
     setLoading(true);
@@ -35,11 +37,12 @@ function CVGPT() {
 
   return (
     <div className="cvgpt-container">
-      <h2>CV GPT</h2>
-      <JobDescriptionInput onSubmit={handleDescriptionSubmit} />
-      {loading && <p>Loading...</p>}
-      {error && <p>{error}</p>}
-      {filteredCandidates.length > 0 && <CVList candidates={filteredCandidates} />}
+    <button className="back-button" onClick={() => navigate('/')}>Back to Home</button>
+    <h2>CV GPT</h2>
+    <JobDescriptionInput onSubmit={handleDescriptionSubmit} />
+    {loading && <p>Loading...</p>} 
+    {error && <p>{error}</p>}
+    {filteredCandidates.length > 0 && <CVList candidates={filteredCandidates} />}
     </div>
   );
 }
