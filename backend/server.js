@@ -80,7 +80,7 @@ app.get('/api/candidates/filterCV', async (req, res) => {
   try {
     const filterConditions = {};
     if (city) { filterConditions.City = { $regex: `^${city}$`, $options: 'i' }; }
-    if (country) { filterConditions.Country = country; }
+    if (country) { filterConditions.Country = { $regex: country, $options: 'i' }; }
     if (skills) { filterConditions.Skills = { $regex: skills, $options: 'i' }; }
     if (jobTitle) { filterConditions.JobTitle = { $regex: jobTitle, $options: 'i' }; }
 
@@ -98,9 +98,9 @@ app.get('/api/candidates/filterCV', async (req, res) => {
     });
 
     if (uniqueCandidates.length === 0) {
+      console.log('No candidates found, returning 404.');
       return res.status(404).json({ message: 'No candidates found' });
     }
-    
     res.json(uniqueCandidates);
   } catch (err) {
     console.error('Error during candidate search:', err);  

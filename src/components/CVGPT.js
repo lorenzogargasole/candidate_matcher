@@ -37,7 +37,7 @@ function CVGPT() {
 
   return (
     <div className="cvgpt-container">
-    <button className="back-button" onClick={() => navigate('/')}>Back to Home</button>
+    <button className="back-button" onClick={() => navigate('/')}>Home</button>
     <h2>CV GPT</h2>
     <JobDescriptionInput onSubmit={handleDescriptionSubmit} />
     {loading && <p>Loading...</p>} 

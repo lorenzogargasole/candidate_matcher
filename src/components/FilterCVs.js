@@ -32,21 +32,28 @@ function FilterCVs() {
     // Fetch candidates
     fetch(`http://localhost:5001/api/candidates/filterCV?${query}`)
       .then((response) => {
+        console.log('Filter submit function called');
+        //404 -> no candidates found
+        if (response.status === 404) {
+          setError('No candidates found with the specified criteria. Please check for typos or try different keywords.');
+          // reset filteredCandidate list
+          setFilteredCandidates([]); 
+          return null;
+        }
+        // error in GET request
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         return response.json();
       })
       .then((data) => {
-        console.log('Filtered candidates from API:', data);
-        
-        if (!Array.isArray(data)) {
-          throw new Error('Invalid data format received from the server');
+        // apply the filter if there's data
+        if (data) {
+          console.log('Filtered candidates from API:', data);
+          setFilteredCandidates(data);
         }
-
-      // Apply filter
-      setFilteredCandidates(data);
       })
+      // Fetching error
       .catch((error) => {
         console.error('Error fetching candidates:', error);
         setError('Error fetching candidates. Please try again.');
@@ -58,7 +65,7 @@ function FilterCVs() {
 
   return (
     <div className="filtercvs-container">
-      <button className="back-button" onClick={() => navigate('/')}>Back to Home</button>
+      <button className="back-button" onClick={() => navigate('/')}>Home</button>
       <h2>Filter CV's</h2>
       <div className="filter-inputs">
         <input
